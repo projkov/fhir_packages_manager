@@ -110,7 +110,7 @@ you add must be added to that rejection list**, or it will silently get packaged
 Verify with `gem build fhir_packages_manager.gemspec -o /tmp/test.gem && gem specification
 /tmp/test.gem files` after adding new root-level files.
 
-### CI/CD (three independent GitHub Actions workflows)
+### CI/CD (four independent GitHub Actions workflows)
 
 - **`quality.yml`** — `bundle exec rake` on every push to every branch; uploads coverage to
   Codecov.
@@ -118,12 +118,19 @@ Verify with `gem build fhir_packages_manager.gemspec -o /tmp/test.gem && gem spe
   Re-runs the full quality gate (`needs: test`), then in parallel: publishes to RubyGems.org
   via **Trusted Publishing** (OIDC, `rubygems/release-gem` action, no stored API key) and
   builds/pushes the Docker image to GHCR (`ghcr.io/projkov/fhir_packages_manager`, tagged
-  `latest` + the version read live from `FhirPackagesManager::VERSION`). Bumping
-  `lib/fhir_packages_manager/version.rb` is a prerequisite for a real release — RubyGems
-  rejects re-pushing an existing version, so this fails loudly (not silently) if forgotten.
-  This supersedes the generic `bundle exec rake release` task that `bundler/gem_tasks` still
-  provides — don't use that locally, since it would try to push with local credentials instead
-  of through the CI trusted-publishing path.
+  `latest` + the version read live from `FhirPackagesManager::VERSION`, for both `linux/amd64`
+  and `linux/arm64` via `docker/setup-qemu-action` + `platforms:` on the build-push step — a
+  single-arch build here is what caused "no matching manifest" pulling on Apple Silicon).
+  Bumping `lib/fhir_packages_manager/version.rb` is a prerequisite for a real release —
+  RubyGems rejects re-pushing an existing version, so this fails loudly (not silently) if
+  forgotten. This supersedes the generic `bundle exec rake release` task that
+  `bundler/gem_tasks` still provides — don't use that locally, since it would try to push with
+  local credentials instead of through the CI trusted-publishing path.
+- **`docker-snapshot.yml`** — manual `workflow_dispatch` only. Same test gate and multi-arch
+  build as `release.yml`'s docker job, but tags
+  `ghcr.io/projkov/fhir_packages_manager:<gem-version>-<short-sha>` (e.g. `0.1.0-9649122`) and
+  never `latest` — lets you get a fresh image from an unreleased commit without bumping
+  `VERSION` or cutting a RubyGems release.
 - **`docs.yml`** — on push to `main`, generates YARD docs and deploys them to GitHub Pages via
   the standard `actions/configure-pages` → `upload-pages-artifact` → `deploy-pages` flow.
 

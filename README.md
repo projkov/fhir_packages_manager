@@ -76,7 +76,13 @@ docker run --rm -v "$(pwd)/fhir_packages:/fhir_packages" ghcr.io/projkov/fhir_pa
   fetch hl7.fhir.us.core@6.1.0 -r https://packages.fhir.org -d /fhir_packages
 ```
 
-Mount a volume (as above) to get downloaded `.tgz` files back out onto the host.
+Mount a volume (as above) to get downloaded `.tgz` files back out onto the host. `latest` and
+version tags are built for both `linux/amd64` and `linux/arm64` (e.g. Apple Silicon).
+
+To get a fresh image built from an unreleased commit (without cutting a real gem release),
+run the **Docker Snapshot** workflow manually from the Actions tab. It re-runs the test/quality
+gate, then pushes `ghcr.io/projkov/fhir_packages_manager:<gem-version>-<commit-sha>` (e.g.
+`0.1.0-9649122`) — never `latest`, so it can't be mistaken for a real release.
 
 #### Docker Compose
 
