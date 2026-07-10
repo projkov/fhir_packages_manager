@@ -30,3 +30,4 @@ Metrics/MethodLength:
 Metrics/BlockLength:
   Exclude:
     - '*.gemspec'
+    - 'spec/**/*.rb'

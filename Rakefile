@@ -2,6 +2,9 @@
 
 require 'bundler/gem_tasks'
 
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec)
+
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
@@ -26,4 +29,4 @@ task :steep do
   sh 'bundle exec steep check'
 end
 
-task default: %i[rubocop reek fasterer flay flog steep]
+task default: %i[spec rubocop reek fasterer flay flog steep]

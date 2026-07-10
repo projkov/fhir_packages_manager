@@ -65,6 +65,15 @@ After checking out the repo, run `bin/setup` to install dependencies. You can al
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+### Tests and code quality
+
+`bundle exec rake` runs the full suite: RSpec (with a SimpleCov gate requiring 95%+ line
+coverage), RuboCop, Reek, Fasterer, Flay, Flog, and Steep. Each is also runnable on its own,
+e.g. `bundle exec rspec`, `bundle exec rake rubocop`, `bundle exec rake steep`.
+
+RSpec specs stub all HTTP calls with WebMock (see `spec/fhir_packages_manager/registry_spec.rb`
+and `cli_spec.rb`), so the suite never hits a real registry.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/prozskov/fhir_packages_manager. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/prozskov/fhir_packages_manager/blob/main/CODE_OF_CONDUCT.md).
