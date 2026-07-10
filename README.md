@@ -1,4 +1,4 @@
-# FhirPackagesManager
+# FHIR Packages Manager 
 
 [![Gem Version](https://badge.fury.io/rb/fhir_packages_manager.svg?icon=si%3Arubygems)](https://badge.fury.io/rb/fhir_packages_manager)
 [![Ruby](https://img.shields.io/badge/ruby-%3E%3D%203.2-CC342D?logo=ruby&logoColor=white)](fhir_packages_manager.gemspec)
