@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'Resolves FHIR implementation guide packages against registries such as ' \
                      'packages.fhir.org and packages.simplifier.net, skips entries on a ' \
                      'configurable ignore list, and downloads the resulting tarballs into a folder.'
-  spec.homepage = 'https://github.com/prozskov/fhir_packages_manager'
+  spec.homepage = 'https://github.com/projkov/fhir_packages_manager'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.2.0'
   spec.metadata['homepage_uri'] = spec.homepage

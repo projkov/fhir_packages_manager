@@ -17,3 +17,11 @@ jobs:
 
       - name: Run tests and quality checks
         run: bundle exec rake
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/.resultset.json
+          fail_ci_if_error: false

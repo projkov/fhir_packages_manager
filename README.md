@@ -1,5 +1,7 @@
 # FhirPackagesManager
 
+[![codecov](https://codecov.io/gh/projkov/fhir_packages_manager/graph/badge.svg)](https://codecov.io/gh/projkov/fhir_packages_manager)
+
 Checks the availability of FHIR implementation guide packages against npm-style
 registries (e.g. `packages.fhir.org`, `packages.simplifier.net`), skips any
 packages/versions on a configurable ignore list, and downloads the resulting
@@ -76,7 +78,7 @@ and `cli_spec.rb`), so the suite never hits a real registry.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/prozskov/fhir_packages_manager. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/prozskov/fhir_packages_manager/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/projkov/fhir_packages_manager. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/projkov/fhir_packages_manager/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -84,4 +86,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the FhirPackagesManager project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/prozskov/fhir_packages_manager/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the FhirPackagesManager project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/projkov/fhir_packages_manager/blob/main/CODE_OF_CONDUCT.md).
