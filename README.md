@@ -61,6 +61,52 @@ exe/fhir_packages_manager fetch hl7.fhir.us.core@6.1.0 hl7.fhir.r4.core \
   -d ./fhir_packages -i fhir_packages_ignore.yml
 ```
 
+### Docker
+
+The CLI is also published as a container image, so it can be used without installing Ruby
+or the gem locally:
+
+```bash
+docker run --rm ghcr.io/projkov/fhir_packages_manager check hl7.fhir.us.core@6.1.0 -r https://packages.fhir.org
+
+docker run --rm -v "$(pwd)/fhir_packages:/fhir_packages" ghcr.io/projkov/fhir_packages_manager \
+  fetch hl7.fhir.us.core@6.1.0 -r https://packages.fhir.org -d /fhir_packages
+```
+
+Mount a volume (as above) to get downloaded `.tgz` files back out onto the host.
+
+#### Docker Compose
+
+A `docker-compose.yml` is included so the image name and volume mount don't need to be
+retyped for every invocation:
+
+```yaml
+services:
+  fhir_packages_manager:
+    image: ghcr.io/projkov/fhir_packages_manager:latest
+    build: .
+    volumes:
+      - ./fhir_packages:/fhir_packages
+      # - ./fhir_packages_ignore.yml:/fhir_packages_ignore.yml:ro
+```
+
+Since the image's `ENTRYPOINT` is the CLI itself, anything passed after the service name
+becomes its arguments:
+
+```bash
+docker compose run --rm fhir_packages_manager \
+  check hl7.fhir.us.core@6.1.0 -r https://packages.fhir.org
+
+docker compose run --rm fhir_packages_manager \
+  fetch hl7.fhir.us.core@6.1.0 -r https://packages.fhir.org -d /fhir_packages
+```
+
+`docker compose run --rm` (rather than `up`) is used because this is a one-shot CLI, not a
+long-running service — `--rm` discards the container after it exits. `docker compose pull`
+fetches the published image from GHCR; `docker compose build` builds it locally from the
+`Dockerfile` instead (e.g. to test an unreleased change). Uncomment the ignore-file volume
+line and add `-i /fhir_packages_ignore.yml` to the command to use an ignore list.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

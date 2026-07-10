@@ -1,0 +1,8 @@
+services:
+  fhir_packages_manager:
+    image: ghcr.io/projkov/fhir_packages_manager:latest
+    build: .
+    volumes:
+      - ./fhir_packages:/fhir_packages
+      # Uncomment to use an ignore list file with -i /fhir_packages_ignore.yml:
+      # - ./fhir_packages_ignore.yml:/fhir_packages_ignore.yml:ro
