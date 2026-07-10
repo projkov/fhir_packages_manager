@@ -188,6 +188,70 @@ RSpec.describe FhirPackagesManager::CLI do
     end
   end
 
+  describe 'sync command' do
+    it 'downloads a new version, skips one already on disk, and skips an ignored one' do
+      stub_metadata('hl7.fhir.us.core', versions: {
+                      '1.0.0' => "#{registry_url}/hl7.fhir.us.core/1.0.0",
+                      '2.0.0' => "#{registry_url}/hl7.fhir.us.core/2.0.0",
+                      '3.0.0' => "#{registry_url}/hl7.fhir.us.core/3.0.0"
+                    })
+      stub_request(:get, "#{registry_url}/hl7.fhir.us.core/1.0.0").to_return(status: 200, body: 'tarball bytes')
+
+      ignore_file = Tempfile.new(['ignore', '.yml'])
+      ignore_file.write("- name: hl7.fhir.us.core\n  version: 2.0.0\n")
+      ignore_file.close
+
+      Dir.mktmpdir do |dir|
+        existing_path = File.join(dir, 'hl7.fhir.us.core-3.0.0.tgz')
+        File.write(existing_path, 'already here')
+
+        result = run_cli('sync', 'hl7.fhir.us.core', '-r', registry_url, '-d', dir, '-i', ignore_file.path)
+
+        expect(result[:exit_status]).to be_nil
+        new_path = File.join(dir, 'hl7.fhir.us.core-1.0.0.tgz')
+        expect(result[:stdout]).to eq(<<~OUTPUT)
+          OK    hl7.fhir.us.core@1.0.0 -> #{new_path} (#{registry_url})
+          SKIP  hl7.fhir.us.core@2.0.0 (ignored)
+          SKIP  hl7.fhir.us.core@3.0.0 (already exists at #{existing_path})
+        OUTPUT
+        expect(File.read(new_path)).to eq('tarball bytes')
+      end
+    end
+
+    it 'reports a single SKIP line and never touches a registry when the whole package is ignored' do
+      ignore_file = Tempfile.new(['ignore', '.yml'])
+      ignore_file.write("- hl7.fhir.us.core\n")
+      ignore_file.close
+
+      result = run_cli('sync', 'hl7.fhir.us.core', '-r', registry_url, '-i', ignore_file.path)
+
+      expect(result[:exit_status]).to be_nil
+      expect(result[:stdout]).to eq("SKIP  hl7.fhir.us.core (ignored)\n")
+      expect(WebMock).not_to have_requested(:get, /#{Regexp.escape(registry_url)}/)
+    end
+
+    it 'reports NONE-equivalent (no output) and does not exit when a registry does not have the package' do
+      stub_request(:get, "#{registry_url}/missing.package").to_return(status: 404, body: 'not found')
+
+      result = run_cli('sync', 'missing.package', '-r', registry_url)
+
+      expect(result[:exit_status]).to be_nil
+      expect(result[:stdout]).to eq('')
+    end
+
+    it 'reports ERR and exits 1 when a download fails' do
+      stub_metadata('hl7.fhir.us.core', versions: { '1.0.0' => "#{registry_url}/hl7.fhir.us.core/1.0.0" })
+      stub_request(:get, "#{registry_url}/hl7.fhir.us.core/1.0.0").to_return(status: 500, body: 'boom')
+
+      Dir.mktmpdir do |dir|
+        result = run_cli('sync', 'hl7.fhir.us.core', '-r', registry_url, '-d', dir)
+
+        expect(result[:exit_status]).to eq(1)
+        expect(result[:stdout]).to start_with('ERR   hl7.fhir.us.core@1.0.0:')
+      end
+    end
+  end
+
   describe 'private dispatch helpers' do
     # `run` only ever calls these with values from COMMANDS / FetchResult#status, so these
     # branches are unreachable from the public API; tested directly for defensive coverage.

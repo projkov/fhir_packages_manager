@@ -46,6 +46,8 @@ result.path   # => "./fhir_packages/hl7.fhir.us.core-6.1.0.tgz" when downloaded
 manager.fetch_all(["hl7.fhir.us.core@6.1.0", "hl7.fhir.r4.core"]) # bare name = latest
 
 manager.list_versions("hl7.fhir.us.core") # => {"https://packages.fhir.org" => ["1.0.0", "1.0.1", ...], ...}
+
+manager.sync("hl7.fhir.us.core") # fetches every non-ignored version not already in destination
 ```
 
 The ignore list file (YAML or JSON) is a flat array where a bare string
@@ -66,7 +68,15 @@ exe/fhir_packages_manager fetch hl7.fhir.us.core@6.1.0 hl7.fhir.r4.core \
   -d ./fhir_packages -i fhir_packages_ignore.yml
 exe/fhir_packages_manager list hl7.fhir.us.core \
   -r https://packages.fhir.org -r https://packages.simplifier.net
+exe/fhir_packages_manager sync hl7.fhir.us.core \
+  -r https://packages.fhir.org -d ./fhir_packages -i fhir_packages_ignore.yml
 ```
+
+`sync` downloads every non-ignored version of a package that isn't already in the destination
+folder (checked as `name-version.tgz`, the same naming `fetch` uses — keep that naming if you
+move the files afterward, since a bare `version.tgz` can collide between two IGs that happen to
+publish the same version number). Its output reuses `fetch`'s `OK`/`SKIP`/`MISS`/`ERR` lines,
+with `SKIP` covering both an ignored version and one already on disk.
 
 ### Docker
 

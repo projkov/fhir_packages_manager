@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-10
+
+### Added
+
+- `sync` CLI command and `Manager#sync`: downloads every non-ignored version of a package not
+  already present in the destination folder (checked as `name-version.tgz`, the same naming
+  `fetch` uses), reusing `#fetch` for the actual download of each missing version. Output reuses
+  `fetch`'s `OK`/`SKIP`/`MISS`/`ERR` lines, with `SKIP` covering both an ignored version and one
+  already on disk. (#3)
+
 ## [0.2.0] - 2026-07-10
 
 ### Added
@@ -50,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: YARD doc comments across the public API, and a Codecov/docs badge pair
   in the README.
 
-[Unreleased]: https://github.com/projkov/fhir_packages_manager/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/projkov/fhir_packages_manager/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/projkov/fhir_packages_manager/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/projkov/fhir_packages_manager/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/projkov/fhir_packages_manager/releases/tag/v0.1.0

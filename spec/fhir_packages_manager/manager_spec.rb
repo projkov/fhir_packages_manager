@@ -194,4 +194,77 @@ RSpec.describe FhirPackagesManager::Manager do
       end
     end
   end
+
+  describe '#sync' do
+    let(:other_registry) { FhirPackagesManager::Registry.new('https://other-registry.test') }
+
+    it 'downloads every candidate version not already on disk, deduped across registries' do
+      Dir.mktmpdir do |dir|
+        manager = described_class.new(registries: [registry, other_registry], destination: dir)
+        allow(registry).to receive(:versions).with('hl7.fhir.us.core').and_return(%w[1.0.0 2.0.0])
+        allow(other_registry).to receive(:versions).with('hl7.fhir.us.core').and_return(['2.0.0'])
+        allow(registry).to receive(:version?).with('hl7.fhir.us.core', '1.0.0').and_return('1.0.0')
+        allow(registry).to receive(:version?).with('hl7.fhir.us.core', '2.0.0').and_return('2.0.0')
+        allow(registry).to receive(:download)
+        allow(other_registry).to receive(:version?)
+
+        results = manager.sync('hl7.fhir.us.core')
+
+        expect(results.size).to eq(2)
+        expect(results.map(&:status)).to eq(%i[downloaded downloaded])
+        expect(results.map { |r| r.package.version }).to contain_exactly('1.0.0', '2.0.0')
+      end
+    end
+
+    it 'skips a version whose file already exists on disk, without touching the registry' do
+      Dir.mktmpdir do |dir|
+        manager = described_class.new(registries: [registry], destination: dir)
+        existing_path = File.join(dir, 'hl7.fhir.us.core-1.0.0.tgz')
+        File.write(existing_path, 'already here')
+        allow(registry).to receive(:versions).with('hl7.fhir.us.core').and_return(['1.0.0'])
+        allow(registry).to receive(:version?)
+
+        results = manager.sync('hl7.fhir.us.core')
+
+        expect(results.size).to eq(1)
+        expect(results.first.status).to eq(:skipped)
+        expect(results.first.path).to eq(existing_path)
+        expect(registry).not_to have_received(:version?)
+      end
+    end
+
+    it 'reports an ignored version the same way #fetch does, without downloading it' do
+      Dir.mktmpdir do |dir|
+        ignore_list = FhirPackagesManager::IgnoreList.new([{ 'name' => 'hl7.fhir.us.core', 'version' => '1.0.0' }])
+        manager = described_class.new(registries: [registry], destination: dir, ignore_list: ignore_list)
+        allow(registry).to receive(:versions).with('hl7.fhir.us.core').and_return(['1.0.0'])
+        allow(registry).to receive(:download)
+
+        results = manager.sync('hl7.fhir.us.core')
+
+        expect(results.first.status).to eq(:ignored)
+        expect(registry).not_to have_received(:download)
+      end
+    end
+
+    it 'reports a single ignored result and never queries any registry when the whole package is ignored' do
+      whole_ignore = FhirPackagesManager::IgnoreList.new(['hl7.fhir.us.core'])
+      manager = described_class.new(registries: [registry], destination: destination, ignore_list: whole_ignore)
+      allow(registry).to receive(:versions)
+
+      results = manager.sync('hl7.fhir.us.core')
+
+      expect(results.size).to eq(1)
+      expect(results.first.status).to eq(:ignored)
+      expect(results.first.package.version).to be_nil
+      expect(registry).not_to have_received(:versions)
+    end
+
+    it 'treats a registry not having the package as no candidates from it' do
+      manager = described_class.new(registries: [registry], destination: destination)
+      allow(registry).to receive(:versions).and_raise(FhirPackagesManager::PackageNotFoundError)
+
+      expect(manager.sync('missing.package')).to eq([])
+    end
+  end
 end

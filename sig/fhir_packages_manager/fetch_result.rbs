@@ -12,6 +12,8 @@ module FhirPackagesManager
 
     def ignored?: () -> bool
 
+    def skipped?: () -> bool
+
     def not_found?: () -> bool
 
     def error?: () -> bool

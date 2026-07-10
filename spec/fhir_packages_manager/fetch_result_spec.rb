@@ -24,6 +24,11 @@ RSpec.describe FhirPackagesManager::FetchResult do
       expect(described_class.new(package: package, status: :downloaded)).not_to be_ignored
     end
 
+    it 'skipped? is true only for :skipped' do
+      expect(described_class.new(package: package, status: :skipped)).to be_skipped
+      expect(described_class.new(package: package, status: :downloaded)).not_to be_skipped
+    end
+
     it 'not_found? is true only for :not_found' do
       expect(described_class.new(package: package, status: :not_found)).to be_not_found
       expect(described_class.new(package: package, status: :downloaded)).not_to be_not_found
