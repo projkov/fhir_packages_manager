@@ -1,0 +1,40 @@
+exclude_paths:
+  - bin
+  - sig
+
+detectors:
+  IrresponsibleModule:
+    enabled: false # house style omits doc comments; see README/CLAUDE.md instead
+
+  UncommunicativeVariableName:
+    accept:
+      - "^e$" # rescue ... => e matches RuboCop's Naming/RescuedExceptionsVariableName
+
+  DataClump:
+    max_copies: 3 # Registry's (name, version) pair is a narrow, self-explanatory query key
+
+  LongParameterList:
+    max_params: 4 # Registry#follow is an internal redirect-dispatch helper, not public API
+
+  TooManyStatements:
+    max_statements: 7 # guard-clause style (parse/ignore/find/download) reads clearer flat than nested
+    exclude:
+      - FhirPackagesManager::CLI#define_options # flat OptionParser flag registration, one line per flag
+
+  NestedIterators:
+    max_allowed_nesting: 2 # Net::HTTP's streaming API is inherently start { } .. request_get { }
+
+  # Disabled below: high false-positive rate on this codebase's idiomatic Ruby
+  # (nil checks on Optional-ish params, private methods reading their
+  # collaborators' data, and equality checks that "branch" on an argument).
+  NilCheck:
+    enabled: false
+
+  FeatureEnvy:
+    enabled: false
+
+  UtilityFunction:
+    enabled: false
+
+  ControlParameter:
+    enabled: false

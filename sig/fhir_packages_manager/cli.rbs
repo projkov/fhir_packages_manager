@@ -1,0 +1,34 @@
+module FhirPackagesManager
+  class CLI
+    COMMANDS: Array[String]
+    BANNER: String
+
+    def self.run: (Array[String] argv) -> void
+
+    def initialize: (Array[String] argv) -> void
+
+    def run: () -> void
+
+    private
+
+    def dispatch: (String? command, Array[String] package_specs) -> void
+
+    def parser: () -> OptionParser
+
+    def define_options: (OptionParser opts) -> void
+
+    def usage_error: (String | Integer message_or_status) -> bot
+
+    def manager: () -> Manager
+
+    def load_ignore_list: () -> IgnoreList?
+
+    def fetch: (Array[String] package_specs) -> void
+
+    def fetch_line: (FetchResult result) -> String?
+
+    def check: (Array[String] package_specs) -> void
+
+    def check_line: (Package package, [Registry, String]? found) -> String
+  end
+end

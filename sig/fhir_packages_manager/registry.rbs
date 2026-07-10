@@ -1,0 +1,31 @@
+module FhirPackagesManager
+  class Registry
+    MAX_REDIRECTS: Integer
+
+    attr_reader base_url: String
+
+    def initialize: (String base_url) -> void
+
+    def metadata: (String name) -> Hash[untyped, untyped]
+
+    def version?: (String name, ?String? version) -> String?
+
+    def tarball_url: (String name, String version) -> String
+
+    def download: (String name, String version, String destination_path) -> String
+
+    private
+
+    def resolve_version: (Hash[untyped, untyped] meta, String? version) -> String?
+
+    def get: (String url) -> String
+
+    def download_file: (String url, String destination_path) -> void
+
+    def save_body: (Net::HTTPResponse response, String destination_path) -> void
+
+    def request: (String url, read_timeout: Integer, ?redirects_left: Integer) { (Net::HTTP, URI::HTTP) -> untyped } -> Net::HTTPResponse
+
+    def follow: (Net::HTTPResponse response, String url, read_timeout: Integer, redirects_left: Integer) { (Net::HTTP, URI::HTTP) -> untyped } -> Net::HTTPResponse
+  end
+end

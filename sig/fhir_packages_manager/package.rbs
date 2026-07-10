@@ -1,0 +1,12 @@
+module FhirPackagesManager
+  class Package < Struct[untyped]
+    attr_accessor name: String
+    attr_accessor version: String?
+
+    def self.new: (String name, ?String? version) -> Package
+
+    def self.parse: (Package | String spec) -> Package
+
+    def to_s: () -> String
+  end
+end

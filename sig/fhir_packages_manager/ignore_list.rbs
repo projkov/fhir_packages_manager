@@ -1,0 +1,17 @@
+module FhirPackagesManager
+  class IgnoreList
+    def self.load: (String path) -> IgnoreList
+
+    def initialize: (?Array[String | Hash[untyped, untyped]] entries) -> void
+
+    def ignored?: (String name, ?String? version) -> bool
+
+    private
+
+    def matches?: (Hash[Symbol, String?] entry, String name, String? version) -> bool
+
+    def normalize: (String | Hash[untyped, untyped] entry) -> Hash[Symbol, String?]
+
+    def normalize_hash: (Hash[untyped, untyped] entry) -> Hash[Symbol, String?]
+  end
+end

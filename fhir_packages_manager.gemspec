@@ -10,13 +10,14 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Check availability of and download FHIR packages from npm-style registries.'
   spec.description = 'Resolves FHIR implementation guide packages against registries such as ' \
-                      'packages.fhir.org and packages.simplifier.net, skips entries on a ' \
-                      'configurable ignore list, and downloads the resulting tarballs into a folder.'
+                     'packages.fhir.org and packages.simplifier.net, skips entries on a ' \
+                     'configurable ignore list, and downloads the resulting tarballs into a folder.'
   spec.homepage = 'https://github.com/prozskov/fhir_packages_manager'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.2.0'
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
+  spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

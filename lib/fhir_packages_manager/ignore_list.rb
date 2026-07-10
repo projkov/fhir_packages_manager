@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "yaml"
-require "json"
+require 'yaml'
+require 'json'
 
 module FhirPackagesManager
   # A list of packages (optionally pinned to a version) to skip when fetching.
@@ -14,7 +14,7 @@ module FhirPackagesManager
   class IgnoreList
     def self.load(path)
       data = case File.extname(path).downcase
-             when ".json"
+             when '.json'
                JSON.parse(File.read(path))
              else
                YAML.load_file(path)
@@ -27,22 +27,32 @@ module FhirPackagesManager
     end
 
     def ignored?(name, version = nil)
-      @entries.any? do |entry|
-        entry[:name] == name && (entry[:version].nil? || entry[:version] == version)
-      end
+      @entries.any? { |entry| matches?(entry, name, version) }
     end
 
     private
+
+    def matches?(entry, name, version)
+      return false unless entry[:name] == name
+
+      ignored_version = entry[:version]
+      ignored_version.nil? || ignored_version == version
+    end
 
     def normalize(entry)
       case entry
       when String
         { name: entry, version: nil }
       when Hash
-        { name: entry["name"] || entry[:name], version: (entry["version"] || entry[:version])&.to_s }
+        normalize_hash(entry)
       else
         raise ArgumentError, "Invalid ignore list entry: #{entry.inspect}"
       end
+    end
+
+    def normalize_hash(entry)
+      version = entry['version'] || entry[:version]
+      { name: entry['name'] || entry[:name], version: version&.to_s }
     end
   end
 end

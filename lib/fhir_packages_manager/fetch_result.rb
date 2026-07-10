@@ -4,7 +4,7 @@ module FhirPackagesManager
   # Outcome of Manager#fetch for a single package.
   #
   # status is one of :downloaded, :ignored, :not_found, :error
-  FetchResult = Struct.new(:package, :status, :registry, :path, :error, keyword_init: true) do
+  class FetchResult < Struct.new(:package, :status, :registry, :path, :error, keyword_init: true)
     def downloaded?
       status == :downloaded
     end

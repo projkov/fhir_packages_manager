@@ -1,0 +1,19 @@
+module FhirPackagesManager
+  class FetchResult < Struct[untyped]
+    attr_accessor package: Package
+    attr_accessor status: Symbol
+    attr_accessor registry: String?
+    attr_accessor path: String?
+    attr_accessor error: String?
+
+    def self.new: (package: Package, status: Symbol, ?registry: String?, ?path: String?, ?error: String?) -> FetchResult
+
+    def downloaded?: () -> bool
+
+    def ignored?: () -> bool
+
+    def not_found?: () -> bool
+
+    def error?: () -> bool
+  end
+end

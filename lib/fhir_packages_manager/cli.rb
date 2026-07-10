@@ -1,0 +1,126 @@
+# frozen_string_literal: true
+
+require 'optparse'
+
+module FhirPackagesManager
+  class CLI
+    COMMANDS = %w[fetch check].freeze
+
+    BANNER = <<~USAGE
+      Usage: fhir_packages_manager COMMAND package[@version] [package[@version] ...] [options]
+
+      Commands:
+        fetch   Download packages into the destination folder
+        check   Report which registry (if any) has each package/version
+
+    USAGE
+
+    def self.run(argv)
+      new(argv).run
+    end
+
+    def initialize(argv)
+      @argv = argv.dup
+      @options = { destination: './fhir_packages', registries: [] } # : Hash[Symbol, untyped]
+    end
+
+    def run
+      parser.parse!(@argv)
+      command = @argv.shift
+      package_specs = @argv
+
+      return usage_error(1) if !COMMANDS.include?(command) || package_specs.empty?
+      return usage_error('Error: at least one --registry URL is required') if @options[:registries].empty?
+
+      dispatch(command, package_specs)
+    end
+
+    private
+
+    def dispatch(command, package_specs)
+      case command
+      when 'fetch'
+        fetch(package_specs)
+      when 'check'
+        check(package_specs)
+      end
+    end
+
+    def parser
+      @parser ||= OptionParser.new do |opts|
+        opts.banner = BANNER
+        define_options(opts)
+      end
+    end
+
+    def define_options(opts)
+      opts.on('-r URL', '--registry URL', 'Registry base URL (repeatable, checked in order given)') do |value|
+        @options[:registries] << value
+      end
+      opts.on('-d DIR', '--destination DIR',
+              'Destination folder for downloaded packages (default: ./fhir_packages)') do |value|
+        @options[:destination] = value
+      end
+      opts.on('-i PATH', '--ignore-file PATH', 'YAML/JSON file listing packages/versions to ignore') do |value|
+        @options[:ignore_file] = value
+      end
+      opts.on('-h', '--help', 'Show this help') do
+        puts opts
+        exit
+      end
+    end
+
+    def usage_error(message_or_status)
+      if message_or_status.is_a?(String)
+        warn message_or_status
+      else
+        warn parser
+      end
+      exit 1
+    end
+
+    def manager
+      @manager ||= Manager.new(
+        registries: @options[:registries],
+        destination: @options[:destination],
+        ignore_list: load_ignore_list
+      )
+    end
+
+    def load_ignore_list
+      ignore_file = @options[:ignore_file]
+      IgnoreList.load(ignore_file) if ignore_file
+    end
+
+    def fetch(package_specs)
+      results = manager.fetch_all(package_specs)
+      results.each { |result| puts fetch_line(result) }
+      exit 1 if results.any? { |result| result.not_found? || result.error? }
+    end
+
+    def fetch_line(result)
+      package = result.package
+      case result.status
+      when :downloaded then "OK    #{package} -> #{result.path} (#{result.registry})"
+      when :ignored then "SKIP  #{package} (ignored)"
+      when :not_found then "MISS  #{package} (not found in any registry)"
+      when :error then "ERR   #{package}: #{result.error}"
+      end
+    end
+
+    def check(package_specs)
+      package_specs.each do |spec|
+        package = Package.parse(spec)
+        found = manager.find_registry(package.name, package.version)
+        puts check_line(package, found)
+      end
+    end
+
+    def check_line(package, found)
+      return "UNAVAILABLE #{package}" unless found
+
+      registry, version = found
+      "AVAILABLE   #{package.name}@#{version} (#{registry.base_url})"
+    end
+  end
+end

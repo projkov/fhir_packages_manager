@@ -1,0 +1,25 @@
+module FhirPackagesManager
+  class Manager
+    attr_reader registries: Array[Registry]
+    attr_reader destination: String
+    attr_reader ignore_list: IgnoreList?
+
+    def initialize: (registries: Array[String | Registry], destination: String, ?ignore_list: IgnoreList?) -> void
+
+    def available?: (String name, ?String? version) -> bool
+
+    def find_registry: (String name, ?String? version) -> [Registry, String]?
+
+    def fetch: (String | Package package) -> FetchResult
+
+    def fetch_all: (Array[String | Package] packages) -> Array[FetchResult]
+
+    private
+
+    def fetch_package: (Package package) -> FetchResult
+
+    def ignored?: (Package package) -> bool
+
+    def download_result: (Package package, [Registry, String] found) -> FetchResult
+  end
+end
