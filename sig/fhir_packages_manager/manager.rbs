@@ -14,6 +14,8 @@ module FhirPackagesManager
 
     def fetch_all: (Array[String | Package] packages) -> Array[FetchResult]
 
+    def list_versions: (String name) -> Hash[String, Array[String]]
+
     private
 
     def fetch_package: (Package package) -> FetchResult
@@ -21,5 +23,7 @@ module FhirPackagesManager
     def ignored?: (Package package) -> bool
 
     def download_result: (Package package, [Registry, String] found) -> FetchResult
+
+    def available_versions: (Registry registry, String name) -> Array[String]
   end
 end

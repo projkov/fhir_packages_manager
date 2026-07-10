@@ -44,6 +44,8 @@ result.status # => :downloaded, :ignored, :not_found, or :error
 result.path   # => "./fhir_packages/hl7.fhir.us.core-6.1.0.tgz" when downloaded
 
 manager.fetch_all(["hl7.fhir.us.core@6.1.0", "hl7.fhir.r4.core"]) # bare name = latest
+
+manager.list_versions("hl7.fhir.us.core") # => {"https://packages.fhir.org" => ["1.0.0", "1.0.1", ...], ...}
 ```
 
 The ignore list file (YAML or JSON) is a flat array where a bare string
@@ -62,6 +64,8 @@ exe/fhir_packages_manager check hl7.fhir.us.core@6.1.0 -r https://packages.fhir.
 exe/fhir_packages_manager fetch hl7.fhir.us.core@6.1.0 hl7.fhir.r4.core \
   -r https://packages.fhir.org -r https://packages.simplifier.net \
   -d ./fhir_packages -i fhir_packages_ignore.yml
+exe/fhir_packages_manager list hl7.fhir.us.core \
+  -r https://packages.fhir.org -r https://packages.simplifier.net
 ```
 
 ### Docker

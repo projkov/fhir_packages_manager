@@ -10,6 +10,8 @@ module FhirPackagesManager
 
     def version?: (String name, ?String? version) -> String?
 
+    def versions: (String name) -> Array[String]
+
     def tarball_url: (String name, String version) -> String
 
     def download: (String name, String version, String destination_path) -> String

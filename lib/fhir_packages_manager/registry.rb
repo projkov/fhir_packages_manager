@@ -50,6 +50,14 @@ module FhirPackagesManager
     end
 
     # @param name [String] the package name
+    # @return [Array<String>] every version published for this package on this registry
+    # @raise [PackageNotFoundError] if the package doesn't exist on this registry
+    # @raise [HttpError] for any other non-2xx/3xx response
+    def versions(name)
+      metadata(name)['versions']&.keys || []
+    end
+
+    # @param name [String] the package name
     # @param version [String] an exact version, as returned by {#version?}
     # @return [String] the tarball's download URL
     # @raise [PackageNotFoundError] if the name/version doesn't exist on this registry

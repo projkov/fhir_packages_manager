@@ -145,4 +145,53 @@ RSpec.describe FhirPackagesManager::Manager do
       expect(results.map { |r| r.package.name }).to eq(['hl7.fhir.us.core', 'hl7.fhir.r4.core'])
     end
   end
+
+  describe '#list_versions' do
+    let(:other_registry) { FhirPackagesManager::Registry.new('https://other-registry.test') }
+    let(:manager) do
+      described_class.new(registries: [registry, other_registry], destination: destination,
+                          ignore_list: ignore_list)
+    end
+    let(:ignore_list) { nil }
+
+    it 'keys the result by registry base_url, skipping registries with no versions' do
+      allow(registry).to receive(:versions).with('hl7.fhir.us.core').and_return(%w[1.0.0 2.0.0])
+      allow(other_registry).to receive(:versions).with('hl7.fhir.us.core').and_return([])
+
+      expect(manager.list_versions('hl7.fhir.us.core')).to eq(registry.base_url => %w[1.0.0 2.0.0])
+    end
+
+    it 'returns an empty hash when no registry has the package' do
+      allow(registry).to receive(:versions).and_raise(FhirPackagesManager::PackageNotFoundError)
+      allow(other_registry).to receive(:versions).and_raise(FhirPackagesManager::PackageNotFoundError)
+
+      expect(manager.list_versions('hl7.fhir.us.core')).to eq({})
+    end
+
+    it 'lets a non-"not found" HttpError from a registry propagate' do
+      allow(registry).to receive(:versions).and_raise(FhirPackagesManager::HttpError.new('boom', 500))
+
+      expect { manager.list_versions('hl7.fhir.us.core') }.to raise_error(FhirPackagesManager::HttpError, 'boom')
+    end
+
+    context 'with an ignore list' do
+      let(:ignore_list) { FhirPackagesManager::IgnoreList.new([{ 'name' => 'hl7.fhir.us.core', 'version' => '1.0.0' }]) }
+
+      it 'filters out an ignored version' do
+        allow(registry).to receive(:versions).with('hl7.fhir.us.core').and_return(%w[1.0.0 2.0.0])
+        allow(other_registry).to receive(:versions).with('hl7.fhir.us.core').and_return([])
+
+        expect(manager.list_versions('hl7.fhir.us.core')).to eq(registry.base_url => ['2.0.0'])
+      end
+
+      it 'never queries any registry when the whole package is ignored' do
+        whole_ignore = FhirPackagesManager::IgnoreList.new(['hl7.fhir.us.core'])
+        manager = described_class.new(registries: [registry], destination: destination, ignore_list: whole_ignore)
+        allow(registry).to receive(:versions)
+
+        expect(manager.list_versions('hl7.fhir.us.core')).to eq({})
+        expect(registry).not_to have_received(:versions)
+      end
+    end
+  end
 end

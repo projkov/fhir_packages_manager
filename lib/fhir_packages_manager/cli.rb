@@ -7,7 +7,7 @@ module FhirPackagesManager
   # See the "CLI" section of the README for usage examples.
   class CLI
     # @return [Array<String>] the supported subcommands
-    COMMANDS = %w[fetch check].freeze
+    COMMANDS = %w[fetch check list].freeze
 
     # @return [String] usage text shown on --help and on invalid invocations
     BANNER = <<~USAGE
@@ -16,6 +16,7 @@ module FhirPackagesManager
       Commands:
         fetch   Download packages into the destination folder
         check   Report which registry (if any) has each package/version
+        list    List every version of a package available across registries
 
     USAGE
 
@@ -53,6 +54,8 @@ module FhirPackagesManager
         fetch(package_specs)
       when 'check'
         check(package_specs)
+      when 'list'
+        list(package_specs)
       end
     end
 
@@ -131,6 +134,21 @@ module FhirPackagesManager
 
       registry, version = found
       "AVAILABLE   #{package.name}@#{version} (#{registry.base_url})"
+    end
+
+    def list(package_specs)
+      package_specs.each do |spec|
+        name = Package.parse(spec).name
+        list_lines(name, manager.list_versions(name)).each { |line| puts line }
+      end
+    end
+
+    def list_lines(name, versions_by_registry)
+      return ["NONE  #{name} (not found in any registry)"] if versions_by_registry.empty?
+
+      versions_by_registry.map do |base_url, versions|
+        "FOUND #{name} @ #{base_url}: #{versions.sort.join(', ')}"
+      end
     end
   end
 end

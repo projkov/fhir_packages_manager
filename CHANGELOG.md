@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.2.0] - 2026-07-10
+
+### Added
+
+- `list` CLI command and `Manager#list_versions`/`Registry#versions`: lists every version of a
+  package published across all configured registries, without needing a version suffix on the
+  spec. Respects the ignore list the same way `fetch` does (whole-package or single-version
+  entries). (#1)
+
 ## [0.1.0] - 2026-07-10
 
 ### Added
@@ -39,5 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: YARD doc comments across the public API, and a Codecov/docs badge pair
   in the README.
 
-[Unreleased]: https://github.com/projkov/fhir_packages_manager/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/projkov/fhir_packages_manager/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/projkov/fhir_packages_manager/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/projkov/fhir_packages_manager/releases/tag/v0.1.0

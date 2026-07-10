@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fhir_packages_manager (0.1.0)
+    fhir_packages_manager (0.2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -224,7 +224,7 @@ CHECKSUMS
   fasterer (0.11.0) sha256=9c38b77583584f3339a729eb077fd8f2856a317abe747528f6563d7c23e9dda8
   ffi (1.17.4) sha256=bcd1642e06f0d16fc9e09ac6d49c3a7298b9789bcb58127302f934e437d60acf
   ffi (1.17.4-arm64-darwin) sha256=19071aaf1419251b0a46852abf960e77330a3b334d13a4ab51d58b31a937001b
-  fhir_packages_manager (0.1.0)
+  fhir_packages_manager (0.2.0)
   fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02
   flay (2.14.4) sha256=a62d96a51d1da185aa41ba95b696966df9f7d1d91a457709277f24515895de77
   flog (4.9.4) sha256=12cc054fab7a2cbd2a906514397c4d7788954d530564782d6f14939dc2dfbcbb
