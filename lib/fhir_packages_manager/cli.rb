@@ -7,7 +7,7 @@ module FhirPackagesManager
   # See the "CLI" section of the README for usage examples.
   class CLI
     # @return [Array<String>] the supported subcommands
-    COMMANDS = %w[fetch check list].freeze
+    COMMANDS = %w[fetch check list sync].freeze
 
     # @return [String] usage text shown on --help and on invalid invocations
     BANNER = <<~USAGE
@@ -17,6 +17,7 @@ module FhirPackagesManager
         fetch   Download packages into the destination folder
         check   Report which registry (if any) has each package/version
         list    List every version of a package available across registries
+        sync    Download every non-ignored version not already in the destination folder
 
     USAGE
 
@@ -56,6 +57,8 @@ module FhirPackagesManager
         check(package_specs)
       when 'list'
         list(package_specs)
+      when 'sync'
+        sync(package_specs)
       end
     end
 
@@ -113,9 +116,11 @@ module FhirPackagesManager
 
     def fetch_line(result)
       package = result.package
+      path = result.path
       case result.status
-      when :downloaded then "OK    #{package} -> #{result.path} (#{result.registry})"
+      when :downloaded then "OK    #{package} -> #{path} (#{result.registry})"
       when :ignored then "SKIP  #{package} (ignored)"
+      when :skipped then "SKIP  #{package} (already exists at #{path})"
       when :not_found then "MISS  #{package} (not found in any registry)"
       when :error then "ERR   #{package}: #{result.error}"
       end
@@ -149,6 +154,12 @@ module FhirPackagesManager
       versions_by_registry.map do |base_url, versions|
         "FOUND #{name} @ #{base_url}: #{versions.sort.join(', ')}"
       end
+    end
+
+    def sync(package_specs)
+      results = package_specs.flat_map { |spec| manager.sync(Package.parse(spec).name) }
+      results.each { |result| puts fetch_line(result) }
+      exit 1 if results.any? { |result| result.not_found? || result.error? }
     end
   end
 end

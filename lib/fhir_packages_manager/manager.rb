@@ -80,6 +80,20 @@ module FhirPackagesManager
       end
     end
 
+    # Downloads every non-ignored version of a package that isn't already present in
+    # {#destination} (as `name-version.tgz`, the same convention {#fetch} downloads use).
+    # A whole-package ignore skips it entirely, without querying any registry; an individual
+    # ignored version instead surfaces as a normal `:ignored` {FetchResult}, same as {#fetch}.
+    #
+    # @param name [String] the package name
+    # @return [Array<FetchResult>] one result per version considered, across all registries
+    def sync(name)
+      whole_package = Package.new(name, nil)
+      return [FetchResult.new(package: whole_package, status: :ignored)] if ignored?(whole_package)
+
+      candidate_versions(name).map { |version| sync_version(Package.new(name, version)) }
+    end
+
     private
 
     def fetch_package(package)
@@ -98,18 +112,37 @@ module FhirPackagesManager
     end
 
     def available_versions(registry, name)
-      registry.versions(name).reject { |version| ignored?(Package.new(name, version)) }
+      raw_versions(registry, name).reject { |version| ignored?(Package.new(name, version)) }
+    end
+
+    def raw_versions(registry, name)
+      registry.versions(name)
     rescue PackageNotFoundError
       []
+    end
+
+    def candidate_versions(name)
+      registries.flat_map { |registry| raw_versions(registry, name) }.uniq
+    end
+
+    def sync_version(package)
+      existing_path = download_path(package)
+      return FetchResult.new(package: package, status: :skipped, path: existing_path) if File.exist?(existing_path)
+
+      fetch(package)
+    end
+
+    def download_path(package)
+      File.join(destination, "#{package.name}-#{package.version}.tgz")
     end
 
     def download_result(package, found)
       registry, resolved_version = found
       name = package.name
-      target = File.join(destination, "#{name}-#{resolved_version}.tgz")
+      resolved_package = Package.new(name, resolved_version)
+      target = download_path(resolved_package)
       registry.download(name, resolved_version, target)
-      FetchResult.new(package: Package.new(name, resolved_version), status: :downloaded,
-                      registry: registry.base_url, path: target)
+      FetchResult.new(package: resolved_package, status: :downloaded, registry: registry.base_url, path: target)
     end
   end
 end

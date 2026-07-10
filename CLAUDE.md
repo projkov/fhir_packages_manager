@@ -102,12 +102,23 @@ Docker image wrapping the same CLI. There is no runtime dependency beyond Ruby s
   the result, but any other `HttpError` propagates uncaught — this mirrors `find_registry`'s/
   `version?`'s existing "not found" is the only expected failure convention, so keep that
   parity if you touch either.
+- **`Manager#sync(name)`** — the delta of `list_versions` against what's already on disk: builds
+  candidate versions from `Registry#versions` **unfiltered** by the ignore list (unlike
+  `list_versions`), then per version either short-circuits to a `:skipped` `FetchResult` if
+  `name-version.tgz` already exists in `destination`, or calls `#fetch` on it — so an individual
+  ignored version still surfaces as the normal `:ignored` result (via `fetch`'s own check), while
+  a whole-package ignore short-circuits to one `:ignored` result without querying any registry.
+  This is why `sync` doesn't reuse `list_versions` for enumeration despite the surface-level
+  similarity — reusing it would silently drop ignored versions instead of reporting them.
+  `download_path`/`download_result`/`sync_version` all take a `Package`, not separate
+  `name`/`version` args — Reek's `DataClump` flagged the primitive-pair version of this, and
+  since `Package` already exists for exactly this, that was the right fix over tuning the cop.
 - **`CLI`** is a thin wrapper: parses argv with `OptionParser`, builds a `Manager`, and prints
-  one line per result (`check`/`list` call `Manager#find_registry`/`#list_versions` directly
-  instead of fetching — so an uncaught `HttpError` from either will crash the CLI with a raw
-  backtrace, same as `check` today; this is intentional/existing behavior, not a regression).
-  `exe/fhir_packages_manager` itself is a 3-line shebang script that requires
-  `fhir_packages_manager/cli` and calls `CLI.run(ARGV)` — keep it that way; it's deliberately
+  one line per result. `check`/`list` call `Manager#find_registry`/`#list_versions` directly
+  instead of fetching, so an uncaught `HttpError` from either crashes the CLI with a raw
+  backtrace (intentional/existing behavior, not a regression); `sync` instead reuses `fetch_line`
+  and inherits `fetch`'s per-item error handling, so a download failure surfaces as an `ERR` line
+  rather than crashing. `exe/fhir_packages_manager` itself is a 3-line shebang script that requires
   outside `lib/`'s `.rb` glob so quality tools would otherwise miss it if logic lived there.
 
 ### The gemspec's file list is git-driven — new top-level tooling files must be excluded

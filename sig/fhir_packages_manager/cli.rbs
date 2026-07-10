@@ -34,5 +34,7 @@ module FhirPackagesManager
     def list: (Array[String] package_specs) -> void
 
     def list_lines: (String name, Hash[String, Array[String]] versions_by_registry) -> Array[String]
+
+    def sync: (Array[String] package_specs) -> void
   end
 end

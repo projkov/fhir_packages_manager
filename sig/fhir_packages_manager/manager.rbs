@@ -16,14 +16,24 @@ module FhirPackagesManager
 
     def list_versions: (String name) -> Hash[String, Array[String]]
 
+    def sync: (String name) -> Array[FetchResult]
+
     private
 
     def fetch_package: (Package package) -> FetchResult
 
     def ignored?: (Package package) -> bool
 
-    def download_result: (Package package, [Registry, String] found) -> FetchResult
-
     def available_versions: (Registry registry, String name) -> Array[String]
+
+    def raw_versions: (Registry registry, String name) -> Array[String]
+
+    def candidate_versions: (String name) -> Array[String]
+
+    def sync_version: (Package package) -> FetchResult
+
+    def download_path: (Package package) -> String
+
+    def download_result: (Package package, [Registry, String] found) -> FetchResult
   end
 end
