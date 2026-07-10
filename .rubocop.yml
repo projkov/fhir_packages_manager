@@ -27,6 +27,9 @@ Style/StructInheritance:
 Metrics/MethodLength:
   Max: 20
 
+Metrics/ClassLength:
+  Max: 130 # CLI grows ~15 lines per subcommand (parser option, dispatch, handler, line formatter)
+
 Metrics/BlockLength:
   Exclude:
     - '*.gemspec'

@@ -30,5 +30,9 @@ module FhirPackagesManager
     def check: (Array[String] package_specs) -> void
 
     def check_line: (Package package, [Registry, String]? found) -> String
+
+    def list: (Array[String] package_specs) -> void
+
+    def list_lines: (String name, Hash[String, Array[String]] versions_by_registry) -> Array[String]
   end
 end

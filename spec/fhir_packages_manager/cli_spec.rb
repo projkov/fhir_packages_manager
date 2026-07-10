@@ -95,6 +95,51 @@ RSpec.describe FhirPackagesManager::CLI do
     end
   end
 
+  describe 'list command' do
+    it 'lists every version found for a package on a registry' do
+      stub_metadata('hl7.fhir.us.core', versions: {
+                      '3.1.0' => "#{registry_url}/hl7.fhir.us.core/3.1.0",
+                      '1.0.0' => "#{registry_url}/hl7.fhir.us.core/1.0.0"
+                    })
+
+      result = run_cli('list', 'hl7.fhir.us.core', '-r', registry_url)
+
+      expect(result[:exit_status]).to be_nil
+      expect(result[:stdout]).to eq("FOUND hl7.fhir.us.core @ #{registry_url}: 1.0.0, 3.1.0\n")
+    end
+
+    it 'reports NONE when no registry has the package' do
+      stub_request(:get, "#{registry_url}/missing.package").to_return(status: 404, body: 'not found')
+
+      result = run_cli('list', 'missing.package', '-r', registry_url)
+
+      expect(result[:exit_status]).to be_nil
+      expect(result[:stdout]).to eq("NONE  missing.package (not found in any registry)\n")
+    end
+
+    it 'excludes an ignored version from the listing' do
+      stub_metadata('hl7.fhir.us.core', versions: {
+                      '1.0.0' => "#{registry_url}/hl7.fhir.us.core/1.0.0",
+                      '2.0.0' => "#{registry_url}/hl7.fhir.us.core/2.0.0"
+                    })
+      ignore_file = Tempfile.new(['ignore', '.yml'])
+      ignore_file.write("- name: hl7.fhir.us.core\n  version: 1.0.0\n")
+      ignore_file.close
+
+      result = run_cli('list', 'hl7.fhir.us.core', '-r', registry_url, '-i', ignore_file.path)
+
+      expect(result[:stdout]).to eq("FOUND hl7.fhir.us.core @ #{registry_url}: 2.0.0\n")
+    end
+
+    it 'accepts a bare package name and ignores any accidental version suffix' do
+      stub_metadata('hl7.fhir.us.core', versions: { '1.0.0' => "#{registry_url}/hl7.fhir.us.core/1.0.0" })
+
+      result = run_cli('list', 'hl7.fhir.us.core@9.9.9', '-r', registry_url)
+
+      expect(result[:stdout]).to eq("FOUND hl7.fhir.us.core @ #{registry_url}: 1.0.0\n")
+    end
+  end
+
   describe 'fetch command' do
     it 'downloads an available package and reports OK, without exiting' do
       stub_metadata('hl7.fhir.us.core', versions: { '6.1.0' => "#{registry_url}/hl7.fhir.us.core/6.1.0" })

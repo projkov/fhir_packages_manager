@@ -93,6 +93,27 @@ RSpec.describe FhirPackagesManager::Registry do
     end
   end
 
+  describe '#versions' do
+    it 'returns every version key from the metadata document' do
+      stub_request(:get, "#{base_url}/hl7.fhir.us.core").to_return(status: 200, body: metadata_body)
+
+      expect(registry.versions('hl7.fhir.us.core')).to contain_exactly('3.1.0', '6.1.0')
+    end
+
+    it 'returns an empty array when the metadata document has no versions map at all' do
+      stub_request(:get, "#{base_url}/no-versions.package")
+        .to_return(status: 200, body: { 'name' => 'no-versions.package' }.to_json)
+
+      expect(registry.versions('no-versions.package')).to eq([])
+    end
+
+    it 'raises PackageNotFoundError on a 404' do
+      stub_request(:get, "#{base_url}/missing.package").to_return(status: 404, body: 'not found')
+
+      expect { registry.versions('missing.package') }.to raise_error(FhirPackagesManager::PackageNotFoundError)
+    end
+  end
+
   describe '#tarball_url' do
     before do
       stub_request(:get, "#{base_url}/hl7.fhir.us.core").to_return(status: 200, body: metadata_body)

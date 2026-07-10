@@ -93,11 +93,20 @@ Docker image wrapping the same CLI. There is no runtime dependency beyond Ruby s
 - **`Manager#fetch`** ties these together: parse → check `IgnoreList` → `find_registry` (tries
   each `Registry` in order, first match wins) → download → wrap outcome in **`FetchResult`**
   (`:downloaded` / `:ignored` / `:not_found` / `:error`, the last carrying an `HttpError`
-  message). `Manager` never raises for expected failure modes — everything expected surfaces
-  as a `FetchResult` status; only `ArgumentError` from bad construction escapes.
+  message). `fetch` itself never raises for expected failure modes — everything expected
+  surfaces as a `FetchResult` status.
+- **`Manager#list_versions(name)`** / **`Registry#versions(name)`** — lists every version across
+  all configured registries (`{registry_base_url => [versions]}`), filtering ignored
+  versions/packages the same way `fetch` does. Unlike `fetch`, this does **not** wrap errors:
+  a registry not having the package (`PackageNotFoundError`) is swallowed and just excluded from
+  the result, but any other `HttpError` propagates uncaught — this mirrors `find_registry`'s/
+  `version?`'s existing "not found" is the only expected failure convention, so keep that
+  parity if you touch either.
 - **`CLI`** is a thin wrapper: parses argv with `OptionParser`, builds a `Manager`, and prints
-  one line per `FetchResult` (`check` subcommand calls `Manager#find_registry` directly instead
-  of fetching). `exe/fhir_packages_manager` itself is a 3-line shebang script that requires
+  one line per result (`check`/`list` call `Manager#find_registry`/`#list_versions` directly
+  instead of fetching — so an uncaught `HttpError` from either will crash the CLI with a raw
+  backtrace, same as `check` today; this is intentional/existing behavior, not a regression).
+  `exe/fhir_packages_manager` itself is a 3-line shebang script that requires
   `fhir_packages_manager/cli` and calls `CLI.run(ARGV)` — keep it that way; it's deliberately
   outside `lib/`'s `.rb` glob so quality tools would otherwise miss it if logic lived there.
 

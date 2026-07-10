@@ -60,6 +60,26 @@ module FhirPackagesManager
       packages.map { |package| fetch(package) }
     end
 
+    # Lists every version of a package published across all configured registries, skipping
+    # registries that don't have it at all and filtering out any ignored versions.
+    #
+    # @param name [String] the package name
+    # @return [Hash{String => Array<String>}] versions, keyed by registry base_url, for
+    #   registries that have at least one non-ignored version; empty if the whole package is
+    #   ignored or no registry has it
+    # @raise [HttpError] if a registry that does have the package fails for another reason
+    #   (mirrors {#find_registry}/{Registry#version?}, which likewise only treat "not found" as
+    #   an expected, non-raising outcome)
+    def list_versions(name)
+      result = {} # : Hash[String, Array[String]]
+      return result if ignored?(Package.new(name, nil))
+
+      registries.each_with_object(result) do |registry, found|
+        versions = available_versions(registry, name)
+        found[registry.base_url] = versions unless versions.empty?
+      end
+    end
+
     private
 
     def fetch_package(package)
@@ -75,6 +95,12 @@ module FhirPackagesManager
 
     def ignored?(package)
       !!ignore_list&.ignored?(package.name, package.version)
+    end
+
+    def available_versions(registry, name)
+      registry.versions(name).reject { |version| ignored?(Package.new(name, version)) }
+    rescue PackageNotFoundError
+      []
     end
 
     def download_result(package, found)
