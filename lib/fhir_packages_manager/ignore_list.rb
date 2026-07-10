@@ -12,6 +12,10 @@ module FhirPackagesManager
   #   - name: hl7.fhir.us.core
   #     version: 3.1.0             # ignore only this one version
   class IgnoreList
+    # Loads an ignore list from a YAML or JSON file (JSON iff the extension is .json).
+    #
+    # @param path [String] path to a YAML or JSON file containing a flat array of entries
+    # @return [IgnoreList]
     def self.load(path)
       data = case File.extname(path).downcase
              when '.json'
@@ -22,10 +26,16 @@ module FhirPackagesManager
       new(data || [])
     end
 
+    # @param entries [Array<String, Hash>] bare package names (ignore every version) and/or
+    #   `{"name" => ..., "version" => ...}` hashes (ignore only that version)
+    # @raise [ArgumentError] if an entry is neither a String nor a Hash
     def initialize(entries = [])
       @entries = entries.map { |entry| normalize(entry) }
     end
 
+    # @param name [String] the package name
+    # @param version [String, nil] the version being requested, if any
+    # @return [Boolean] true if this name/version is on the ignore list
     def ignored?(name, version = nil)
       @entries.any? { |entry| matches?(entry, name, version) }
     end

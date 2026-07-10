@@ -1,6 +1,7 @@
 # FhirPackagesManager
 
 [![codecov](https://codecov.io/gh/projkov/fhir_packages_manager/graph/badge.svg)](https://codecov.io/gh/projkov/fhir_packages_manager)
+[![docs](https://img.shields.io/badge/docs-yard-blue.svg)](https://projkov.github.io/fhir_packages_manager/)
 
 Checks the availability of FHIR implementation guide packages against npm-style
 registries (e.g. `packages.fhir.org`, `packages.simplifier.net`), skips any
@@ -121,6 +122,19 @@ e.g. `bundle exec rspec`, `bundle exec rake rubocop`, `bundle exec rake steep`.
 
 RSpec specs stub all HTTP calls with WebMock (see `spec/fhir_packages_manager/registry_spec.rb`
 and `cli_spec.rb`), so the suite never hits a real registry.
+
+### Documentation
+
+API docs are generated from the code with [YARD](https://yardoc.org) and published to
+[GitHub Pages](https://projkov.github.io/fhir_packages_manager/) by
+`.github/workflows/docs.yml` on every push to `main`. To build and browse them locally:
+
+```bash
+bundle exec yard doc   # writes HTML to doc/
+bundle exec yard server --reload  # serves it at http://localhost:8808, rebuilding on change
+```
+
+`bundle exec yard stats --list-undoc` lists any undocumented public classes/methods.
 
 ## Contributing
 

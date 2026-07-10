@@ -15,6 +15,8 @@ group :development do
   gem 'reek', require: false
   gem 'rubocop', require: false
   gem 'steep', require: false
+  gem 'webrick', require: false # runtime dep of `yard server`, no longer bundled with Ruby
+  gem 'yard', require: false
 end
 
 group :test do

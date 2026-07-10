@@ -8,19 +8,27 @@ require 'fileutils'
 module FhirPackagesManager
   # Client for a single FHIR package registry (e.g. https://packages.fhir.org
   # or https://packages.simplifier.net). Both implement the same npm-style
-  # registry API: GET /{package} returns metadata with a "versions" map and
-  # "dist-tags", and GET /{package}/{version} streams the .tgz tarball.
+  # registry API: `GET /<package>` returns metadata with a "versions" map and
+  # "dist-tags", and `GET /<package>/<version>` streams the .tgz tarball.
   class Registry
+    # @return [Integer] maximum HTTP redirects followed before raising {HttpError}
     MAX_REDIRECTS = 5
 
+    # @return [String] the registry's base URL, with any trailing slash stripped
     attr_reader :base_url
 
+    # @param base_url [String] e.g. "https://packages.fhir.org"
     def initialize(base_url)
       @base_url = base_url.to_s.chomp('/')
       @metadata_cache = {} # : Hash[String, Hash[untyped, untyped]]
     end
 
-    # Full registry metadata document for a package name.
+    # Fetches (and caches) the full registry metadata document for a package name.
+    #
+    # @param name [String] the package name
+    # @return [Hash] the parsed npm-style registry metadata ("dist-tags", "versions", etc.)
+    # @raise [PackageNotFoundError] if the package doesn't exist on this registry
+    # @raise [HttpError] for any other non-2xx/3xx response
     def metadata(name)
       @metadata_cache[name] ||= JSON.parse(get("#{base_url}/#{name}"))
     rescue HttpError => e
@@ -29,8 +37,10 @@ module FhirPackagesManager
       raise
     end
 
-    # Returns the resolved version string if the package/version exists on
-    # this registry, or nil otherwise ("latest"/nil resolve to dist-tags.latest).
+    # @param name [String] the package name
+    # @param version [String, nil] a specific version, or nil/"latest" for the newest
+    # @return [String, nil] the resolved version string if it exists on this registry,
+    #   or nil if the package or version doesn't exist (never raises)
     def version?(name, version = nil)
       meta = metadata(name)
       resolved = resolve_version(meta, version)
@@ -39,6 +49,10 @@ module FhirPackagesManager
       nil
     end
 
+    # @param name [String] the package name
+    # @param version [String] an exact version, as returned by {#version?}
+    # @return [String] the tarball's download URL
+    # @raise [PackageNotFoundError] if the name/version doesn't exist on this registry
     def tarball_url(name, version)
       meta = metadata(name)
       entry = meta.dig('versions', version)
@@ -47,7 +61,14 @@ module FhirPackagesManager
       entry.dig('dist', 'tarball') || "#{base_url}/#{name}/#{version}"
     end
 
-    # Downloads the package tarball to destination_path and returns it.
+    # Downloads the package tarball to destination_path, creating parent directories as needed.
+    #
+    # @param name [String] the package name
+    # @param version [String] an exact version, as returned by {#version?}
+    # @param destination_path [String] where to write the downloaded .tgz file
+    # @return [String] destination_path
+    # @raise [PackageNotFoundError] if the name/version doesn't exist on this registry
+    # @raise [HttpError] if the download itself fails
     def download(name, version, destination_path)
       FileUtils.mkdir_p(File.dirname(destination_path))
       download_file(tarball_url(name, version), destination_path)

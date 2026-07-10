@@ -1,0 +1,4 @@
+--markup markdown
+--title "FhirPackagesManager"
+--readme README.md
+lib/**/*.rb

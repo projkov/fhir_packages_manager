@@ -3,9 +3,13 @@
 require 'optparse'
 
 module FhirPackagesManager
+  # Command-line entry point backing the `fhir_packages_manager` executable.
+  # See the "CLI" section of the README for usage examples.
   class CLI
+    # @return [Array<String>] the supported subcommands
     COMMANDS = %w[fetch check].freeze
 
+    # @return [String] usage text shown on --help and on invalid invocations
     BANNER = <<~USAGE
       Usage: fhir_packages_manager COMMAND package[@version] [package[@version] ...] [options]
 
@@ -15,15 +19,21 @@ module FhirPackagesManager
 
     USAGE
 
+    # Parses argv and runs the requested command (`fetch` or `check`).
+    #
+    # @param argv [Array<String>] arguments as passed to the executable, e.g. ARGV
+    # @return [void]
     def self.run(argv)
       new(argv).run
     end
 
+    # @param argv [Array<String>] see {.run}
     def initialize(argv)
       @argv = argv.dup
       @options = { destination: './fhir_packages', registries: [] } # : Hash[Symbol, untyped]
     end
 
+    # @return [void]
     def run
       parser.parse!(@argv)
       command = @argv.shift

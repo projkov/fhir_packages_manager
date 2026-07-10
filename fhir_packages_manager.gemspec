@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.2.0'
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
+  spec.metadata['documentation_uri'] = 'https://projkov.github.io/fhir_packages_manager/'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
@@ -26,7 +27,7 @@ Gem::Specification.new do |spec|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
         f.start_with?(*%w[bin/ spec/ .github/ Gemfile Dockerfile docker-compose.yml .dockerignore
-                          .gitignore .rspec .rubocop.yml .reek.yml Steepfile])
+                          .gitignore .rspec .rubocop.yml .reek.yml .yardopts Steepfile])
     end
   end
   spec.bindir = 'exe'
