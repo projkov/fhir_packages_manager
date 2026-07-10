@@ -112,7 +112,15 @@ line and add `-i /fhir_packages_ignore.yml` to the command to use an ignore list
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
+
+To release a new version: bump `VERSION` in `lib/fhir_packages_manager/version.rb`, add a
+dated entry to `CHANGELOG.md`, and merge to `main`. Then either publish a GitHub Release (tag
+`vX.Y.Z`) or manually run the `Release` workflow from the Actions tab — `.github/workflows/release.yml`
+re-runs the full test/quality gate and, if it passes, publishes the gem to
+[rubygems.org](https://rubygems.org) via Trusted Publishing and pushes the Docker image to
+GHCR. Don't run `bundle exec rake release` locally — it would try to push using local
+credentials instead of through that pipeline.
 
 ### Tests and code quality
 

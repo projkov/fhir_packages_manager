@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0]
+## [0.1.0] - 2026-07-10
 
 ### Added
 
@@ -39,4 +39,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: YARD doc comments across the public API, and a Codecov/docs badge pair
   in the README.
 
-[Unreleased]: https://github.com/projkov/fhir_packages_manager/commits/main
+[Unreleased]: https://github.com/projkov/fhir_packages_manager/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/projkov/fhir_packages_manager/releases/tag/v0.1.0
