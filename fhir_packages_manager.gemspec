@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
         f.start_with?(*%w[bin/ spec/ .github/ Gemfile Dockerfile docker-compose.yml .dockerignore
-                          .gitignore .rspec .rubocop.yml .reek.yml .yardopts Steepfile])
+                          .gitignore .rspec .rubocop.yml .reek.yml .yardopts Steepfile CLAUDE.md])
     end
   end
   spec.bindir = 'exe'
